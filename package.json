@@ -1,0 +1,31 @@
+{
+  "name": "vue-model-validator",
+  "version": "0.0.1",
+  "description": "Model validator component for Vue.js",
+  "main": "lib/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jhaesus/vue-model-validator.git"
+  },
+  "devDependencies": {
+    "coffee-script": "^1.10.0",
+    "vue": "^0.12.15",
+    "webpack": "^1.11.0"
+  },
+  "keywords": [
+    "vue",
+    "validator",
+    "validations",
+    "plugin"
+  ],
+  "author": "Rainer Sai",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jhaesus/vue-model-validator/issues"
+  },
+  "homepage": "https://github.com/jhaesus/vue-model-validator#readme",
+  "scripts": {
+    "release": "bash ./build/release.sh",
+    "build": "coffee --no-header --bare --compile --output lib/ src/ && webpack --config build/webpack.build.dev.config.js && webpack --config build/webpack.build.min.config.js"
+  }
+}
