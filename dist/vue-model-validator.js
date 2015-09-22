@@ -1,5 +1,5 @@
 /*!
- * vue-model-validator v0.0.1
+ * vue-model-validator v0.0.0
  * (c) 2015 Rainer Sai
  * Released under the MIT License.
  */
@@ -121,7 +121,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      };
 	    })(this)).indexOf(false) === -1;
 	  };
-	  return Vue.prototype.$watch_validations = function() {
+	  Vue.prototype.$watch_validations = function() {
 	    var expression, field, ref, results;
 	    ref = collection(this);
 	    results = [];
@@ -132,6 +132,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    return results;
 	  };
+	  return this;
 	};
 
 

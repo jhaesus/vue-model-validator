@@ -39,3 +39,5 @@ exports.install = (Vue) ->
     for field, expression of collection(@)
       watch_targets(field, expression, @)
       @$watch(field, listener(field, expression, @), true, false)
+
+  @
