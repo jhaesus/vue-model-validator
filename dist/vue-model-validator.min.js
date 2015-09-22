@@ -1,5 +1,5 @@
 /*!
- * vue-model-validator v0.0.0
+ * vue-model-validator v0.0.1
  * (c) 2015 Rainer Sai
  * Released under the MIT License.
  */

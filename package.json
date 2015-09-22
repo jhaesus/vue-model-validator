@@ -9,7 +9,6 @@
   },
   "devDependencies": {
     "coffee-script": "^1.10.0",
-    "json-loader": "^0.5.3",
     "vue": "^0.12.15",
     "webpack": "^1.11.0"
   },
