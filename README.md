@@ -11,26 +11,36 @@ $ npm install vue-model-validator
 
 # Usage
 ```javascript
-var Vue = require('vue')
-var Validator = require('vue-model-validator')
+  var Vue = require('vue')
+  var Validator = require('vue-model-validator')
 
-Vue.use(Validator)
+  Vue.use(Validator)
 ```
 ```javascript
-Vue.extend({
-  created: function() {
-    this.$watch_validations()
-  },
-  validate: {
-    "user.email": "required"
-  }
-  methods: {
-    on_submit: function(e) {
-      if(this.$validate()) {
+  Vue.extend({
+    created: function() {
+      this.$watch_validations()
+    },
+    validate: {
+      // can use multiple validations, vue directive style
+      "user.email": "required, min-length: 3",
+      "user.password": "required, min-length: 6"
+      "user.password_confirmation": "required, min-length: 6"
+      
+    }
+    methods: {
+      on_create: function(e) {
+        // checks all validations
+        if(this.$validate()) {
+        }
+      },
+      on_update: function(e) {
+        // checks only user.email and user.password validations
+        if(this.$validate("user.email", "user.password")) {
+        }
       }
     }
-  }
-});
+  });
 ```
 
 # Properties
@@ -85,7 +95,7 @@ For example, if you use `required` validator on the user.email model, then you w
 ```javascript
   Vue.extend({
     validate: {
-      "user.images": "min: 1"
+      "user.images.length": "min: 1"
     }
   });
 ```
@@ -94,7 +104,7 @@ For example, if you use `required` validator on the user.email model, then you w
 ```javascript
   Vue.extend({
     validate: {
-      "user.images": "max: 3"
+      "user.images.length": "max: 3"
     }
   });
 ```
@@ -142,6 +152,12 @@ For example, if you use `required` validator on the user.email model, then you w
   });
 ```
 
+## Adding/Overwriting validators
+```javascript
+  Vue.validator("my-validator", function(field_name, value, directive, vm) {
+    return true;
+  });
+```
 
 # License
 
