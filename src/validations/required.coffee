@@ -1,2 +1,3 @@
 module.exports = (field, value, item, vm) ->
-  !!value
+  if typeof value is 'string' then value = value.trim()
+  ["", undefined, null].indexOf(value) == -1

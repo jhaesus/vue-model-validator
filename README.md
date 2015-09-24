@@ -49,7 +49,7 @@ $ npm install vue-model-validator
 For example, if you use `required` validator on the user.email model, then you will have model properties set up
 ```
     validation.user.email.invalid (true if any validations didn't pass)
-    validation.user.email.required (true if the validation passed)
+    validation.user.email.required (true if the validation didn't pass)
 ```
 # Validators
 
@@ -126,16 +126,6 @@ For example, if you use `required` validator on the user.email model, then you w
     }
   });
 ```
-
-### confirmation
-```javascript
-  Vue.extend({
-    validate: {
-      "user.password": "confirmation"
-    }
-  });
-```
-
 
 ### custom
 

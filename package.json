@@ -5,10 +5,20 @@
   "main": "lib/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jhaesus/vue-model-validator.git"
+    "url": "git+https://github.com/jhaesus/vue-model-validator.git"
   },
   "devDependencies": {
     "coffee-script": "^1.10.0",
+    "commonjs": "0.0.1",
+    "karma": "^0.13.10",
+    "karma-coffee-preprocessor": "^0.3.0",
+    "karma-commonjs": "0.0.13",
+    "karma-coverage": "^0.5.2",
+    "karma-expect": "^1.1.0",
+    "karma-mocha": "^0.2.0",
+    "karma-phantomjs-launcher": "^0.2.1",
+    "mocha": "^2.3.3",
+    "phantomjs": "^1.9.18",
     "vue": "^0.12.15",
     "webpack": "^1.11.0"
   },
@@ -26,6 +36,7 @@
   "homepage": "https://github.com/jhaesus/vue-model-validator#readme",
   "scripts": {
     "release": "bash ./build/release.sh",
-    "build": "coffee --no-header --bare --compile --output lib/ src/ && webpack --config build/webpack.build.dev.config.js && webpack --config build/webpack.build.min.config.js"
+    "build": "coffee --no-header --bare --compile --output lib/ src/ && webpack --config build/webpack.build.dev.config.js && webpack --config build/webpack.build.min.config.js",
+    "spec": "karma start spec/karma.conf.js --single-run"
   }
 }

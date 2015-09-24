@@ -1,5 +1,5 @@
 /*!
- * vue-model-validator v0.0.1
+ * vue-model-validator v0.0.2
  * (c) 2015 Rainer Sai
  * Released under the MIT License.
  */
@@ -59,8 +59,13 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports.install = function(Vue) {
-	  var collection, listener, run_validations, target_listener, watch_targets;
+	exports.install = function(Vue, options) {
+	  var collection, listener, old_init, run_validations, target_listener, watch_targets;
+	  if (options == null) {
+	    options = {
+	      watch: false
+	    };
+	  }
 	  Vue.options.validators = __webpack_require__(1);
 	  Vue.validator = function(name, fn) {
 	    return Vue.options.validators[name] = fn;
@@ -72,11 +77,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    validations = Vue.parsers.directive.parse(expression);
 	    return vm.$set("validation." + field + ".invalid", !validations.every(function(item) {
-	      var ref, result, validation;
+	      var ref, result, validation, validator;
 	      validation = item.arg || item.expression;
-	      result = (((ref = vm.$options.validators) != null ? ref[validation] : void 0) || Vue.options.validators[validation])(field, value, item, vm);
-	      vm.$set("validation." + field + "." + validation, !result);
-	      return result;
+	      if (validator = ((ref = vm.$options.validators) != null ? ref[validation] : void 0) || Vue.options.validators[validation]) {
+	        result = validator(field, value, item, vm);
+	        vm.$set("validation." + field + "." + validation, !result);
+	        return result;
+	      } else {
+	        Vue.util.warn("Model Validator: Missing validator " + validation);
+	        return null;
+	      }
 	    }));
 	  };
 	  listener = function(field, expression, vm) {
@@ -95,16 +105,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	      return run_validations(field, expression, vm, vm.$get(field));
 	    };
 	  };
-	  watch_targets = function(field, expression, vm) {
+	  watch_targets = function(field, expression, vm, options) {
 	    if (expression == null) {
 	      expression = "";
 	    }
+	    if (options == null) {
+	      options = {
+	        deep: true,
+	        immediate: false,
+	        sync: false
+	      };
+	    }
 	    return Vue.parsers.directive.parse(expression).forEach(function(item) {
-	      var arg, key, ref, validation;
+	      var key, ref, validation;
 	      validation = item.arg || item.expression;
-	      arg = item.arg ? item.expression : void 0;
 	      if (key = (((ref = vm.$options.validators) != null ? ref[validation] : void 0) || Vue.options.validators[validation]).watchTarget) {
-	        return vm.$watch(item[key], target_listener(field, item.raw, vm), true, false);
+	        return vm.$watch(item[key], target_listener(field, item.raw, vm), options);
 	      }
 	    });
 	  };
@@ -116,22 +132,50 @@ return /******/ (function(modules) { // webpackBootstrap
 	    keys = arguments.length ? [].slice.call(arguments) : Object.keys(collection(this));
 	    return keys.map((function(_this) {
 	      return function(key) {
-	        listener(key, collection(_this)[key], _this)(_this.$get(key));
-	        return !_this.$get("validation." + key + ".invalid");
+	        var expression;
+	        if (expression = collection(_this)[key]) {
+	          listener(key, expression, _this)(_this.$get(key));
+	          return !_this.$get("validation." + key + ".invalid");
+	        } else {
+	          Vue.util.warn("Model Validator: Invalid validation target " + key);
+	          return null;
+	        }
 	      };
 	    })(this)).indexOf(false) === -1;
 	  };
-	  Vue.prototype.$watch_validations = function() {
+	  Vue.prototype.$watch_validations = function(options) {
 	    var expression, field, ref, results;
+	    if (options == null) {
+	      options = {
+	        deep: true,
+	        immediate: false,
+	        sync: false
+	      };
+	    }
 	    ref = collection(this);
 	    results = [];
 	    for (field in ref) {
 	      expression = ref[field];
-	      watch_targets(field, expression, this);
-	      results.push(this.$watch(field, listener(field, expression, this), true, false));
+	      watch_targets(field, expression, this, options);
+	      results.push(this.$watch(field, listener(field, expression, this), options));
 	    }
 	    return results;
 	  };
+	  if (options.watch) {
+	    old_init = Vue.prototype._init;
+	    Vue.prototype._init = function(options) {
+	      var old_created;
+	      if (options == null) {
+	        options = {};
+	      }
+	      old_created = options.created || function() {};
+	      options.created = function() {
+	        this.$watch_validations();
+	        return old_created.apply(this, arguments);
+	      };
+	      return old_init.call(this, options);
+	    };
+	  }
 	  return this;
 	};
 
@@ -140,40 +184,27 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports.confirmation = __webpack_require__(2);
+	exports.email = __webpack_require__(2);
 
-	exports.email = __webpack_require__(3);
+	exports['equal-to'] = __webpack_require__(3);
 
-	exports['equal-to'] = __webpack_require__(4);
+	exports['custom'] = __webpack_require__(4);
 
-	exports['custom'] = __webpack_require__(5);
+	exports.max = __webpack_require__(5);
 
-	exports.max = __webpack_require__(6);
+	exports['max-length'] = __webpack_require__(6);
 
-	exports['max-length'] = __webpack_require__(7);
+	exports.min = __webpack_require__(7);
 
-	exports.min = __webpack_require__(8);
+	exports['min-length'] = __webpack_require__(8);
 
-	exports['min-length'] = __webpack_require__(9);
+	exports.pattern = __webpack_require__(9);
 
-	exports.pattern = __webpack_require__(10);
-
-	exports.required = __webpack_require__(11);
+	exports.required = __webpack_require__(10);
 
 
 /***/ },
 /* 2 */
-/***/ function(module, exports) {
-
-	module.exports = function(field, value, item, vm) {
-	  var origin;
-	  origin = field.replace(/_confirmation$/, "");
-	  return value === vm.$get(origin);
-	};
-
-
-/***/ },
-/* 3 */
 /***/ function(module, exports) {
 
 	module.exports = function(field, value, item, vm) {
@@ -182,19 +213,19 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 4 */
+/* 3 */
 /***/ function(module, exports) {
 
 	module.exports = function(field, value, item, vm) {
 	  var arg;
 	  this.watchTarget = "expression";
 	  arg = item.arg ? item.expression : void 0;
-	  return (value || "") === (vm.$get(arg) || "");
+	  return value === vm.$get(arg);
 	};
 
 
 /***/ },
-/* 5 */
+/* 4 */
 /***/ function(module, exports) {
 
 	module.exports = function(field, value, item, vm) {
@@ -203,7 +234,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 6 */
+/* 5 */
 /***/ function(module, exports) {
 
 	module.exports = function(field, value, item, vm) {
@@ -215,7 +246,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 7 */
+/* 6 */
 /***/ function(module, exports) {
 
 	module.exports = function(field, value, item, vm) {
@@ -227,7 +258,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 8 */
+/* 7 */
 /***/ function(module, exports) {
 
 	module.exports = function(field, value, item, vm) {
@@ -239,6 +270,18 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
+/* 8 */
+/***/ function(module, exports) {
+
+	module.exports = function(field, value, item, vm) {
+	  var arg, validation;
+	  validation = item.arg || item.expression;
+	  arg = item.arg ? item.expression : void 0;
+	  return value && value.length && value.length >= +arg;
+	};
+
+
+/***/ },
 /* 9 */
 /***/ function(module, exports) {
 
@@ -246,7 +289,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var arg, validation;
 	  validation = item.arg || item.expression;
 	  arg = item.arg ? item.expression : void 0;
-	  return !value || value.length && value.length >= +arg;
+	  return RegExp("" + (vm.constructor.util.stripQuotes(arg))).test(value);
 	};
 
 
@@ -255,19 +298,10 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports) {
 
 	module.exports = function(field, value, item, vm) {
-	  var arg, validation;
-	  validation = item.arg || item.expression;
-	  arg = item.arg ? item.expression : void 0;
-	  return RegExp("" + arg).test(value);
-	};
-
-
-/***/ },
-/* 11 */
-/***/ function(module, exports) {
-
-	module.exports = function(field, value, item, vm) {
-	  return !!value;
+	  if (typeof value === 'string') {
+	    value = value.trim();
+	  }
+	  return ["", void 0, null].indexOf(value) === -1;
 	};
 
 

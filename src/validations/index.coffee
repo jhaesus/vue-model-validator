@@ -1,4 +1,3 @@
-exports.confirmation = require('./confirmation')
 exports.email = require('./email')
 exports['equal-to'] = require('./equal-to')
 exports['custom'] = require('./custom')

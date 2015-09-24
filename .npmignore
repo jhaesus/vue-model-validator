@@ -1,6 +1,7 @@
 node_modules
-build
+coverage
 npm-debug.log
+build
 .git
 .gitignore
 src
