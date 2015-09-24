@@ -1,7 +1,4 @@
-Vue = require("../../node_modules/vue/dist/vue")
-Validator = require("../../src/index")
-
-Vue.use Validator
+Vue = require("../shared")
 
 describe "$validate", ->
   it "should return true/false", ->
