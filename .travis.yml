@@ -1,0 +1,7 @@
+language: node_js
+script: npm run spec
+addons:
+  code_climate:
+    repo_token: d97fca4c18114c2200373145d34b62eaee34ea91eb6da3e2affee29ace2bb519
+after_script:
+  - npm bin codeclimate-test-reporter < coverage/**/*lcov.info

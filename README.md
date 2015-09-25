@@ -1,4 +1,4 @@
-# vue-model-validator
+# vue-model-validator [![Build Status](https://travis-ci.org/jhaesus/vue-model-validator.svg?branch=master)](https://travis-ci.org/jhaesus/vue-model-validator)
 
 Model validator component for Vue.js
 
