@@ -23,11 +23,13 @@ exports.install = (Vue, options={watch: false}) ->
   target_listener = (field, expression="", vm) ->
     -> run_validations(field, expression, vm, vm.$get(field))
 
-  watch_targets = (field, expression="", vm, options={deep: true, immediate: false, sync: false}) ->
+  watch_target = (field, expression="", vm, options={deep: true, immediate: false, sync: false}) ->
+    unwatches = []
     Vue.parsers.directive.parse(expression).forEach (item) ->
       validation = item.arg || item.expression
       if key = (vm.$options.validators?[validation] || Vue.options.validators[validation]).watchTarget
-        vm.$watch(item[key], target_listener(field, item.raw, vm), options)
+        unwatches.push vm.$watch(item[key], target_listener(field, item.raw, vm), options)
+    unwatches
 
   collection = (vm) ->
     vm.$options.validations || {}
@@ -44,9 +46,11 @@ exports.install = (Vue, options={watch: false}) ->
     ).indexOf(false) == -1
 
   Vue.prototype.$watch_validations = (options={deep: true, immediate: false, sync: false}) ->
+    unwatches = []
     for field, expression of collection(@)
-      watch_targets(field, expression, @, options)
-      @$watch(field, listener(field, expression, @), options)
+      unwatches = unwatches.concat watch_target(field, expression, @, options)
+      unwatches.push @$watch(field, listener(field, expression, @), options)
+    unwatches
 
   if options.watch
     old_init = Vue.prototype._init
