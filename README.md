@@ -23,9 +23,9 @@ $ npm install vue-model-validator
     },
     validate: {
       // can use multiple validations, vue directive style
-      "user.email": "required, min-length: 3",
-      "user.password": "required, min-length: 6"
-      "user.password_confirmation": "required, min-length: 6"
+      "user.email": "required, min_length: 3",
+      "user.password": "required, min_length: 6"
+      "user.password_confirmation": "required, min_length: 6"
       
     }
     methods: {
@@ -42,6 +42,23 @@ $ npm install vue-model-validator
     }
   });
 ```
+# Options
+
+## watch
+Whether or not validations should be run immediately on Vue instance initialization.
+default false
+
+## parse_all
+Whether or not all validations should be run, or should validations be run until the first invalid result.
+default true
+
+## invalid_on_error
+Whether or not validation should be valid in case of errors.
+default true
+
+## watch_options
+Options passed to $watch
+default { deep: false, immediate: false, sync: false }
 
 # Properties
 
