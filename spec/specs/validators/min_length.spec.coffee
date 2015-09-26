@@ -1,10 +1,10 @@
 Vue = require("../../shared")
 
-describe "validator: min-length", ->
+describe "validator: min_length", ->
   it "should validate minimum length", ->
     component = new Vue
       validations:
-        "user.name": "min-length: 5"
+        "user.name": "min_length: 5"
 
     expect(component.$validate()).equal(false)
 

@@ -1,10 +1,10 @@
 Vue = require("../../shared")
 
-describe "validator: equal-to", ->
+describe "validator: equal_to", ->
   it "should validate equalness", ->
     component = new Vue
       validations:
-        "user.email_confirmation": "equal-to: user.email"
+        "user.email_confirmation": "equal_to: user.email"
 
     component.$set("user.email_confirmation", "test@email.com")
 

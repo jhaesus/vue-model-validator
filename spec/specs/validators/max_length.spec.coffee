@@ -1,10 +1,10 @@
 Vue = require("../../shared")
 
-describe "validator: max-length", ->
+describe "validator: max_length", ->
   it "should validate maximum length", ->
     component = new Vue
       validations:
-        "user.name": "max-length: 5"
+        "user.name": "max_length: 5"
 
     expect(component.$validate()).equal(true)
 

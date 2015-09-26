@@ -77,7 +77,7 @@ For example, if you use `required` validator on the user.email model, then you w
 ```javascript
   Vue.extend({
     validate: {
-      "user.email": "min-length: 3"
+      "user.email": "min_length: 3"
     }
   });
 ```
@@ -86,7 +86,7 @@ For example, if you use `required` validator on the user.email model, then you w
 ```javascript
   Vue.extend({
     validate: {
-      "user.email": "max-length: 255"
+      "user.email": "max_length: 255"
     }
   });
 ```
@@ -122,7 +122,7 @@ For example, if you use `required` validator on the user.email model, then you w
 ```javascript
   Vue.extend({
     validate: {
-      "user.password": "equal-to: user.password_confirmation"
+      "user.password": "equal_to: user.password_confirmation"
     }
   });
 ```
@@ -144,7 +144,7 @@ For example, if you use `required` validator on the user.email model, then you w
 
 ## Adding/Overwriting validators
 ```javascript
-  Vue.validator("my-validator", function(field_name, value, directive, vm) {
+  Vue.validator("my_validator", function(field_name, value, directive, vm) {
     return true;
   });
 ```
