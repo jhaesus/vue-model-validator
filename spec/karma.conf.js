@@ -6,7 +6,6 @@ module.exports = function (config) {
 
     files: [
       'node_modules/vue/dist/vue.js',
-      'dist/vue-model-validator.js',
       'src/**/*.coffee',
       'spec/shared.coffee',
       'spec/specs/**/*.coffee'
@@ -15,7 +14,6 @@ module.exports = function (config) {
 
     preprocessors: {
       'node_modules/vue/dist/vue.js': ['commonjs'],
-      'dist/vue-model-validator.js': ['coverage', 'commonjs'],
       'spec/shared.coffee': ['coffee', 'commonjs'],
       'src/**/*.coffee': ['coffee', 'coverage', 'commonjs'],
       'spec/specs/**/*.coffee': ['coffee', 'commonjs']

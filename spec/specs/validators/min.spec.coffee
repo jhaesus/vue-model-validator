@@ -1,18 +1,23 @@
 Vue = require("../../shared")
 
-describe "validator: min", ->
-  it "should validate minimum", ->
-    component = new Vue
-      validations:
-        "user.images.length": "min: 1"
-      data:
-        user:
-          images: []
+make = ->
+  new Vue
+    validations:
+      "user.login_count": "min: 1"
 
+describe "validator: min", ->
+  it "should validate undefined", ->
+    component = make()
+    expect(component.$validate()).equal(true)
+
+  it "should validate 0", ->
+    component = make()
+    component.$set "user.login_count", 0
     expect(component.$validate()).equal(false)
 
-    component.$get("user.images").push({})
-
+  it "should validate 1", ->
+    component = make()
+    component.$set "user.login_count", 1
     expect(component.$validate()).equal(true)
 
 

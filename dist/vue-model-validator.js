@@ -1,5 +1,5 @@
 /*!
- * vue-model-validator v0.0.2
+ * vue-model-validator v0.0.3
  * (c) 2015 Rainer Sai
  * Released under the MIT License.
  */
@@ -59,35 +59,95 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports.install = function(Vue, options) {
-	  var collection, listener, old_init, run_validations, target_listener, watch_targets;
-	  if (options == null) {
-	    options = {
-	      watch: false
-	    };
+	exports.install = function(Vue, global) {
+	  var base, base1, base2, defaults, expressions, listener, old_init, on_missing_validator, parsed_expressions, run_all, run_single_validation, run_until_first, run_validations, runners, target_listener, watch_target;
+	  if (global == null) {
+	    global = {};
+	  }
+	  defaults = {
+	    watch: false,
+	    parse_all: true,
+	    invalid_on_error: true,
+	    watch_options: {
+	      deep: false,
+	      immediate: false,
+	      sync: false
+	    }
+	  };
+	  if (global.watch == null) {
+	    global.watch = defaults.watch;
+	  }
+	  if (global.parse_all == null) {
+	    global.parse_all = defaults.parse_all;
+	  }
+	  if (global.invalid_on_error == null) {
+	    global.invalid_on_error = defaults.invalid_on_error;
+	  }
+	  if (global.watch == null) {
+	    global.watch = defaults.watch;
+	  }
+	  if ((base = global.watch).deep == null) {
+	    base.deep = defaults.watch.deep;
+	  }
+	  if ((base1 = global.watch).immediate == null) {
+	    base1.immediate = defaults.watch.immediate;
+	  }
+	  if ((base2 = global.watch).sync == null) {
+	    base2.sync = defaults.watch.sync;
 	  }
 	  Vue.options.validators = __webpack_require__(1);
 	  Vue.validator = function(name, fn) {
-	    return Vue.options.validators[name] = fn;
+	    if (name === "invalid") {
+	      return Vue.util.warn("Model Validator: 'invalid' is reserved");
+	    } else {
+	      return Vue.options.validators[name] = fn;
+	    }
 	  };
-	  run_validations = function(field, expression, vm, value) {
-	    var validations;
+	  expressions = function(vm) {
+	    return vm.$options.validations || {};
+	  };
+	  runners = function(vm) {
+	    return vm.$options.validators || {};
+	  };
+	  parsed_expressions = function(expression) {
+	    return Vue.parsers.directive.parse(expression);
+	  };
+	  on_missing_validator = function(validation) {
+	    Vue.util.warn("Model Validator: Missing validator " + validation);
+	    return !global.invalid_on_error;
+	  };
+	  run_single_validation = function(item, vm, field) {
+	    var result, validation, validator;
+	    validation = item.arg || item.expression;
+	    validator = runners(vm)[validation];
+	    result = validator ? validator(field, vm.$get(field), item, vm) : on_missing_validator(validation);
+	    vm.$set("validation." + field + "." + validation, !result);
+	    return result;
+	  };
+	  run_all = function(field, expression, vm, value, validations) {
 	    if (expression == null) {
 	      expression = "";
 	    }
-	    validations = Vue.parsers.directive.parse(expression);
-	    return vm.$set("validation." + field + ".invalid", !validations.every(function(item) {
-	      var ref, result, validation, validator;
-	      validation = item.arg || item.expression;
-	      if (validator = ((ref = vm.$options.validators) != null ? ref[validation] : void 0) || Vue.options.validators[validation]) {
-	        result = validator(field, value, item, vm);
-	        vm.$set("validation." + field + "." + validation, !result);
-	        return result;
-	      } else {
-	        Vue.util.warn("Model Validator: Missing validator " + validation);
-	        return null;
-	      }
-	    }));
+	    return validations.map(function(item) {
+	      return run_single_validation(item, vm, field);
+	    }).indexOf(false) === -1;
+	  };
+	  run_until_first = function(field, expression, vm, value, validations) {
+	    if (expression == null) {
+	      expression = "";
+	    }
+	    return validations.every(function(item) {
+	      return run_single_validation(item, vm, field);
+	    });
+	  };
+	  run_validations = function(field, expression, vm, value) {
+	    var result;
+	    if (expression == null) {
+	      expression = "";
+	    }
+	    result = global.parse_all ? run_all(field, expression, vm, value, parsed_expressions(expression)) : run_until_first(field, expression, vm, value, parsed_expressions(expression));
+	    vm.$set("validation." + field + ".invalid", !result);
+	    return result;
 	  };
 	  listener = function(field, expression, vm) {
 	    if (expression == null) {
@@ -105,63 +165,54 @@ return /******/ (function(modules) { // webpackBootstrap
 	      return run_validations(field, expression, vm, vm.$get(field));
 	    };
 	  };
-	  watch_targets = function(field, expression, vm, options) {
+	  watch_target = function(field, expression, vm, options) {
+	    var unwatches;
 	    if (expression == null) {
 	      expression = "";
 	    }
 	    if (options == null) {
-	      options = {
-	        deep: true,
-	        immediate: false,
-	        sync: false
-	      };
+	      options = global.watch_options;
 	    }
-	    return Vue.parsers.directive.parse(expression).forEach(function(item) {
-	      var key, ref, validation;
+	    unwatches = [];
+	    parsed_expressions(expression).forEach(function(item) {
+	      var key, validation;
 	      validation = item.arg || item.expression;
-	      if (key = (((ref = vm.$options.validators) != null ? ref[validation] : void 0) || Vue.options.validators[validation]).watchTarget) {
-	        return vm.$watch(item[key], target_listener(field, item.raw, vm), options);
+	      if (key = runners(vm)[validation].watchTarget) {
+	        return unwatches.push(vm.$watch(item[key], target_listener(field, item.raw, vm), options));
 	      }
 	    });
-	  };
-	  collection = function(vm) {
-	    return vm.$options.validations || {};
+	    return unwatches;
 	  };
 	  Vue.prototype.$validate = function() {
 	    var keys;
-	    keys = arguments.length ? [].slice.call(arguments) : Object.keys(collection(this));
+	    keys = arguments.length ? [].slice.call(arguments) : Object.keys(expressions(this));
 	    return keys.map((function(_this) {
 	      return function(key) {
 	        var expression;
-	        if (expression = collection(_this)[key]) {
-	          listener(key, expression, _this)(_this.$get(key));
-	          return !_this.$get("validation." + key + ".invalid");
+	        if (expression = expressions(_this)[key]) {
+	          return listener(key, expression, _this)(_this.$get(key));
 	        } else {
 	          Vue.util.warn("Model Validator: Invalid validation target " + key);
-	          return null;
+	          return !global.invalid_on_error;
 	        }
 	      };
 	    })(this)).indexOf(false) === -1;
 	  };
 	  Vue.prototype.$watch_validations = function(options) {
-	    var expression, field, ref, results;
+	    var expression, field, ref, unwatches;
 	    if (options == null) {
-	      options = {
-	        deep: true,
-	        immediate: false,
-	        sync: false
-	      };
+	      options = global.watch_options;
 	    }
-	    ref = collection(this);
-	    results = [];
+	    unwatches = [];
+	    ref = expressions(this);
 	    for (field in ref) {
 	      expression = ref[field];
-	      watch_targets(field, expression, this, options);
-	      results.push(this.$watch(field, listener(field, expression, this), options));
+	      unwatches = unwatches.concat(watch_target(field, expression, this, options));
+	      unwatches.push(this.$watch(field, listener(field, expression, this), options));
 	    }
-	    return results;
+	    return unwatches;
 	  };
-	  if (options.watch) {
+	  if (global.watch) {
 	    old_init = Vue.prototype._init;
 	    Vue.prototype._init = function(options) {
 	      var old_created;
@@ -186,17 +237,17 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	exports.email = __webpack_require__(2);
 
-	exports['equal-to'] = __webpack_require__(3);
+	exports['equal_to'] = __webpack_require__(3);
 
 	exports['custom'] = __webpack_require__(4);
 
 	exports.max = __webpack_require__(5);
 
-	exports['max-length'] = __webpack_require__(6);
+	exports['max_length'] = __webpack_require__(6);
 
 	exports.min = __webpack_require__(7);
 
-	exports['min-length'] = __webpack_require__(8);
+	exports['min_length'] = __webpack_require__(8);
 
 	exports.pattern = __webpack_require__(9);
 
@@ -208,7 +259,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports) {
 
 	module.exports = function(field, value, item, vm) {
-	  return /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/.test(value);
+	  return (value == null) || /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/.test(value);
 	};
 
 
@@ -217,10 +268,8 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports) {
 
 	module.exports = function(field, value, item, vm) {
-	  var arg;
 	  this.watchTarget = "expression";
-	  arg = item.arg ? item.expression : void 0;
-	  return value === vm.$get(arg);
+	  return value === vm.$get(item.expression);
 	};
 
 
@@ -238,10 +287,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports) {
 
 	module.exports = function(field, value, item, vm) {
-	  var arg, validation;
-	  validation = item.arg || item.expression;
-	  arg = item.arg ? item.expression : void 0;
-	  return value <= +arg;
+	  return (value == null) || value <= +item.expression;
 	};
 
 
@@ -250,10 +296,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports) {
 
 	module.exports = function(field, value, item, vm) {
-	  var arg, validation;
-	  validation = item.arg || item.expression;
-	  arg = item.arg ? item.expression : void 0;
-	  return !value || value.length && value.length <= +arg;
+	  return (value == null) || (value.length != null) && value.length <= +item.expression;
 	};
 
 
@@ -262,10 +305,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports) {
 
 	module.exports = function(field, value, item, vm) {
-	  var arg, validation;
-	  validation = item.arg || item.expression;
-	  arg = item.arg ? item.expression : void 0;
-	  return value >= +arg;
+	  return (value == null) || value >= +item.expression;
 	};
 
 
@@ -274,10 +314,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports) {
 
 	module.exports = function(field, value, item, vm) {
-	  var arg, validation;
-	  validation = item.arg || item.expression;
-	  arg = item.arg ? item.expression : void 0;
-	  return value && value.length && value.length >= +arg;
+	  return (value == null) || value.length && value.length >= +item.expression;
 	};
 
 
@@ -286,10 +323,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports) {
 
 	module.exports = function(field, value, item, vm) {
-	  var arg, validation;
-	  validation = item.arg || item.expression;
-	  arg = item.arg ? item.expression : void 0;
-	  return RegExp("" + (vm.constructor.util.stripQuotes(arg))).test(value);
+	  return (value == null) || RegExp("" + (vm.constructor.util.stripQuotes(item.expression))).test(value);
 	};
 
 
@@ -301,7 +335,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (typeof value === 'string') {
 	    value = value.trim();
 	  }
-	  return ["", void 0, null].indexOf(value) === -1;
+	  return ["", void 0, null, false].indexOf(value) === -1;
 	};
 
 
